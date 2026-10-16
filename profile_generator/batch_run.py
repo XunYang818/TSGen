@@ -6,6 +6,9 @@ from datetime import datetime
 from typing import Tuple
 from profile_generator import generate_resident
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Default occupation list
 DEFAULT_OCCUPATIONS = [
     "Engineer", "Teacher", "Healthcare-Worker", "Accountant", "Lawyer", "Civil-Servant",
@@ -189,7 +192,7 @@ def main():
     parser = argparse.ArgumentParser(description="Batch generate resident profiles")
     parser.add_argument("-y", "--yaml-folder", type=str, required=True, help="YAML folder path")
     parser.add_argument("-o", "--output-folder", type=str, required=True, help="Output folder path")
-    parser.add_argument("--model", type=str, default="gpt-4o-2024-11-20", help="Model name")
+    parser.add_argument("--model", type=str, default=os.getenv("TSGEN_MODEL") or "gpt-4o-2024-11-20", help="Model name")
     parser.add_argument("--temp-creative", type=float, default=0.8, help="Creative temperature")
     parser.add_argument("--temp-validation", type=float, default=0.3, help="Validation temperature")
     parser.add_argument("--max-concurrent", type=int, default=8, help="Maximum concurrent tasks")

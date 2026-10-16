@@ -8,23 +8,28 @@ load_dotenv()
 
 # Prompt version: 'full' (with constraints) or 'core' (without constraints)
 PROMPT_VERSION = "full"
+MODEL_NAME = os.getenv("TSGEN_MODEL")
+
+
+def configured_model(default: str) -> str:
+    """Use TSGEN_MODEL when set, otherwise preserve each original default."""
+    return MODEL_NAME or default
 
 
 # Agent configurations (default)
 DEFAULT_AGENT_CONFIGS = {
     "planning": {
-        "planning_model": "o3-2025-04-16",
-        # "planning_model": "gpt-4o-2024-11-20",
-        "validation_model": "gpt-4o-2024-11-20", 
-        "correction_model": "gpt-4o-2024-11-20",
+        "planning_model": configured_model("o3-2025-04-16"),
+        "validation_model": configured_model("gpt-4o-2024-11-20"),
+        "correction_model": configured_model("gpt-4o-2024-11-20"),
         "planning_t": 0.5,        
         "validation_t": 0.3,      
         "correction_t": 0.7
     },
     "event": {
-        "generation_model": "gpt-4o-2024-11-20",
-        "validation_model": "gpt-4o-2024-11-20",
-        "correction_model": "gpt-4o-2024-11-20",
+        "generation_model": configured_model("gpt-4o-2024-11-20"),
+        "validation_model": configured_model("gpt-4o-2024-11-20"),
+        "correction_model": configured_model("gpt-4o-2024-11-20"),
         "generation_t": 0.5,      
         "validation_t": 0.3,      
         "correction_t": 0.7,
@@ -32,9 +37,9 @@ DEFAULT_AGENT_CONFIGS = {
         "context_size": 2
     },
     "action_step": {
-        "generation_model": "gpt-4o-2024-11-20",
-        "validation_model": "gpt-4o-2024-11-20",
-        "correction_model": "gpt-4o-2024-11-20", 
+        "generation_model": configured_model("gpt-4o-2024-11-20"),
+        "validation_model": configured_model("gpt-4o-2024-11-20"),
+        "correction_model": configured_model("gpt-4o-2024-11-20"),
         "generation_t": 0.5,      
         "validation_t": 0.3,     
         "correction_t": 0.7,

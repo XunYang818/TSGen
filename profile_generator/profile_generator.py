@@ -1,3 +1,4 @@
+import os
 from typing import Optional, TypedDict
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -5,6 +6,8 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
 from dotenv import load_dotenv
 load_dotenv()
+
+MODEL_NAME = os.getenv("TSGEN_MODEL")
 
 
 # Resident profile generation prompt template
@@ -218,7 +221,7 @@ def build_resident_profile_graph(model_name: str, temperature_creative: float, t
 
 def generate_resident(layout_yaml: str, 
                       occupation: str,
-                      model_name: str = "gpt-4o-2024-11-20",
+                      model_name: Optional[str] = None,
                       temperature_creative: float = 0.8,
                       temperature_validation: float = 0.3) -> str:
     """
@@ -226,6 +229,8 @@ def generate_resident(layout_yaml: str,
     Returns:
         resident profile string
     """
+    model_name = model_name or MODEL_NAME or "gpt-4o-2024-11-20"
+
     # Create workflow
     workflow = build_resident_profile_graph(model_name, temperature_creative, temperature_validation)
 

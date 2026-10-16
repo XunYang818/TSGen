@@ -31,7 +31,7 @@ class PlanningAgent:
         Generate activity plans
         """
         try:
-            result = self.planning_chain.invoke({
+            result = self._invoke_structured(self.planning_chain, {
                 "activity_planning_requirements": self.requirements,
                 "resident_profile": state["resident_profile"],
                 "house_layout_yaml": state["house_layout_yaml"]
@@ -56,7 +56,7 @@ class PlanningAgent:
         Validate activity plans
         """
         try:
-            result = self.validation_chain.invoke({
+            result = self._invoke_structured(self.validation_chain, {
                 "activity_planning_requirements": self.requirements,
                 "resident_profile": state["resident_profile"],
                 "house_layout_yaml": state["house_layout_yaml"],
@@ -93,7 +93,7 @@ class PlanningAgent:
         try:
             assert state.get("activity_plans") and state.get("activity_validation") and not state.get("activity_validation")["is_valid"]
             
-            result = self.correction_chain.invoke({
+            result = self._invoke_structured(self.correction_chain, {
                 "activity_planning_requirements": self.requirements,
                 "resident_profile": state["resident_profile"],
                 "house_layout_yaml": state["house_layout_yaml"],
@@ -115,3 +115,21 @@ class PlanningAgent:
             error_msg = f"Activity plan correction failed: {str(e)}"
             logger.error(error_msg, exc_info=True)
             raise ValueError(error_msg)
+
+    def _invoke_structured(self, chain, payload, attempts: int = 3):
+        """Invoke a structured-output chain and retry transient parse failures."""
+        last_error = None
+        for attempt in range(1, attempts + 1):
+            result = chain.invoke(payload)
+            if result.get("parsed") is not None:
+                return result
+
+            last_error = result.get("parsing_error") or "structured output was empty"
+            logger.warning(
+                "Structured output parsing failed (attempt %s/%s): %s",
+                attempt,
+                attempts,
+                last_error,
+            )
+
+        raise ValueError(f"Structured output parsing failed after {attempts} attempts: {last_error}")

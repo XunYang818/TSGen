@@ -50,7 +50,7 @@ class EventAgent:
             current_batch = activity_plans[batch_start:batch_end]
             previous_events_context = self._prepare_events_context(state)
             
-            result = self.generation_chain.invoke({
+            result = self._invoke_structured(self.generation_chain, {
                 "event_requirements": self.requirements,
                 "resident_profile": state["resident_profile"],
                 "house_layout_yaml": state["house_layout_yaml"],
@@ -110,7 +110,7 @@ class EventAgent:
             events_json = convert_to_json(current_batch_events)
             previous_events_context = self._prepare_events_context(state, exclude_activity_ids=batch_activity_ids)
             
-            result = self.validation_chain.invoke({
+            result = self._invoke_structured(self.validation_chain, {
                 "event_requirements": self.requirements,
                 "resident_profile": state["resident_profile"],
                 "house_layout_yaml": state["house_layout_yaml"],
@@ -178,7 +178,7 @@ class EventAgent:
             
             previous_events_context = self._prepare_events_context(state, exclude_activity_ids=batch_activity_ids)
             
-            result = self.correction_chain.invoke({
+            result = self._invoke_structured(self.correction_chain, {
                 "event_requirements": self.requirements,
                 "resident_profile": state["resident_profile"],
                 "house_layout_yaml": state["house_layout_yaml"],
@@ -210,6 +210,24 @@ class EventAgent:
             logger.error(error_msg, exc_info=True)
             raise ValueError(error_msg)
 
+
+    def _invoke_structured(self, chain, payload, attempts: int = 3):
+        """Invoke a structured-output chain and retry transient parse failures."""
+        last_error = None
+        for attempt in range(1, attempts + 1):
+            result = chain.invoke(payload)
+            if result.get("parsed") is not None:
+                return result
+
+            last_error = result.get("parsing_error") or "structured output was empty"
+            logger.warning(
+                "Structured output parsing failed (attempt %s/%s): %s",
+                attempt,
+                attempts,
+                last_error,
+            )
+
+        raise ValueError(f"Structured output parsing failed after {attempts} attempts: {last_error}")
 
     def _prepare_events_context(self, state: SimulationState, exclude_activity_ids: List[str] = None) -> str:
         """

@@ -22,9 +22,9 @@ class PlanningAgent:
         """Initialize planning agent"""
         self.requirements = get_requirements()['activity']
         prompts = get_planning_prompts()
-        self.planning_chain = prompts['planning'] | ChatOpenAI(model=planning_model, temperature=planning_t, max_retries=5).with_structured_output(ActivityPlanOutput, include_raw=True)
-        self.validation_chain = prompts['validation'] | ChatOpenAI(model=validation_model, temperature=validation_t, max_retries=5).with_structured_output(ValidationResult, include_raw=True)
-        self.correction_chain = prompts['correction'] | ChatOpenAI(model=correction_model, temperature=correction_t, max_retries=5).with_structured_output(ActivityPlanOutput, include_raw=True)
+        self.planning_chain = prompts['planning'] | ChatOpenAI(model=planning_model, temperature=planning_t, max_retries=5).with_structured_output(ActivityPlanOutput, method="function_calling", include_raw=True)
+        self.validation_chain = prompts['validation'] | ChatOpenAI(model=validation_model, temperature=validation_t, max_retries=5).with_structured_output(ValidationResult, method="function_calling", include_raw=True)
+        self.correction_chain = prompts['correction'] | ChatOpenAI(model=correction_model, temperature=correction_t, max_retries=5).with_structured_output(ActivityPlanOutput, method="function_calling", include_raw=True)
         
     def generate_plans(self, state: SimulationState) -> SimulationState:
         """

@@ -33,9 +33,9 @@ class EventAgent:
         self.requirements = get_requirements()['event']
         # Build processing chains (include_raw=True to get usage_metadata)
         prompts = get_event_prompts()
-        self.generation_chain = prompts['generation'] | ChatOpenAI(model=generation_model, temperature=generation_t, max_retries=5).with_structured_output(EventOutput, include_raw=True)
-        self.validation_chain = prompts['validation'] | ChatOpenAI(model=validation_model, temperature=validation_t, max_retries=5).with_structured_output(ValidationResult, include_raw=True)
-        self.correction_chain = prompts['correction'] | ChatOpenAI(model=correction_model, temperature=correction_t, max_retries=5).with_structured_output(EventOutput, include_raw=True)
+        self.generation_chain = prompts['generation'] | ChatOpenAI(model=generation_model, temperature=generation_t, max_retries=5).with_structured_output(EventOutput, method="function_calling", include_raw=True)
+        self.validation_chain = prompts['validation'] | ChatOpenAI(model=validation_model, temperature=validation_t, max_retries=5).with_structured_output(ValidationResult, method="function_calling", include_raw=True)
+        self.correction_chain = prompts['correction'] | ChatOpenAI(model=correction_model, temperature=correction_t, max_retries=5).with_structured_output(EventOutput, method="function_calling", include_raw=True)
     
     def generate_events(self, state: SimulationState) -> SimulationState:
         """

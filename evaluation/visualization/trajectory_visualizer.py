@@ -52,9 +52,9 @@ def fmt_time(t):
 class TrajectoryVisualizer:
     """Trajectory visualizer."""
 
-    def __init__(self, json_path):
+    def __init__(self, json_path, yaml_path=None):
         self.json_path = json_path
-        self.yaml_path = get_yaml_path(json_path)
+        self.yaml_path = yaml_path or get_yaml_path(json_path)
 
         if not os.path.exists(self.yaml_path):
             raise FileNotFoundError(f"YAML file not found: {self.yaml_path}")
@@ -241,6 +241,8 @@ class TrajectoryVisualizer:
 def main():
     parser = argparse.ArgumentParser(description='Trajectory visualization tool')
     parser.add_argument('-j', '--json', required=True, help='Trajectory JSON file path')
+    parser.add_argument('-y', '--layout', default=None,
+                        help='House layout YAML path (optional; inferred when omitted)')
     parser.add_argument('-o', '--output', default='./figures', help='Output directory')
 
     args = parser.parse_args()
@@ -254,7 +256,7 @@ def main():
     print(f"  Output: {args.output}")
     print("=" * 50)
 
-    TrajectoryVisualizer(args.json).generate(args.output)
+    TrajectoryVisualizer(args.json, args.layout).generate(args.output)
 
 
 if __name__ == '__main__':
